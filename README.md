@@ -16,9 +16,9 @@ Example
 	router.GET("/", IndexGetHandler)
 	router.POST("/", IndexPostHandler)
 	router.MIDDLEWARES(Logger, AuthBasic).GROUP("/api", func(subRouter mux.Router) {
-    	subRouter.GET("/user", UserGetHandler)
-   	 subRouter.POST("/user", UserPostHandler)
-    })
+		subRouter.GET("/user", UserGetHandler)
+		subRouter.POST("/user", UserPostHandler)
+	})
 	http.ListenAndServe(":8080", router)
 ```
 
