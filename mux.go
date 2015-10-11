@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+// Router Interface
 type Router interface {
 	GET(string, http.Handler) Router
 	POST(string, http.Handler) Router
@@ -20,7 +21,8 @@ type Router interface {
 	ServeHTTP(http.ResponseWriter, *http.Request)
 }
 
-type gorwardRouter struct {
+// GowardRouter holds the data of the route
+type GowardRouter struct {
 	R          *mux.Router
 	Path       string
 	Host       string
@@ -28,21 +30,25 @@ type gorwardRouter struct {
 	Middleware []MiddlewareConstructor
 }
 
+// MiddlewareConstructor type Middleware
 type MiddlewareConstructor func(http.Handler) http.Handler
 
+// Vars gets path variables from request.
 func Vars(r *http.Request) map[string]string {
 	return mux.Vars(r)
 }
 
-func NewRouter(router *mux.Router) gorwardRouter {
+// NewRouter creates an instance of GowardRouter
+func NewRouter(router *mux.Router) GowardRouter {
 	if router == nil {
 		router = mux.NewRouter()
 	}
 
-	return gorwardRouter{R: router}
+	return GowardRouter{R: router}
 }
 
-func (r gorwardRouter) HANDLER(handler http.Handler) Router {
+// HANDLER create route using GorwardRouter values
+func (r GowardRouter) HANDLER(handler http.Handler) Router {
 	var route = r.R.NewRoute()
 	if r.Host != "" {
 		route = route.Host(r.Host)
@@ -62,6 +68,7 @@ func (r gorwardRouter) HANDLER(handler http.Handler) Router {
 	return r
 }
 
+// bindMiddlewares create handler by chaining middleware and handler
 func bindMiddlewares(handler http.Handler, middlewares ...MiddlewareConstructor) http.Handler {
 	var final http.Handler
 	if handler != nil {
@@ -77,8 +84,9 @@ func bindMiddlewares(handler http.Handler, middlewares ...MiddlewareConstructor)
 	return final
 }
 
-func (r gorwardRouter) MIDDLEWARES(middlewares ...MiddlewareConstructor) Router {
-	n := &gorwardRouter{
+// MIDDLEWARES set GowardRoute's middlewares
+func (r GowardRouter) MIDDLEWARES(middlewares ...MiddlewareConstructor) Router {
+	n := &GowardRouter{
 		R:          r.R,
 		Host:       r.Host,
 		Path:       r.Path,
@@ -89,8 +97,9 @@ func (r gorwardRouter) MIDDLEWARES(middlewares ...MiddlewareConstructor) Router 
 	return n
 }
 
-func (r gorwardRouter) METHODS(methods ...string) Router {
-	n := &gorwardRouter{
+// METHODS set GowardRoute's Methods
+func (r GowardRouter) METHODS(methods ...string) Router {
+	n := &GowardRouter{
 		R:          r.R,
 		Host:       r.Host,
 		Path:       r.Path,
@@ -101,8 +110,9 @@ func (r gorwardRouter) METHODS(methods ...string) Router {
 	return n
 }
 
-func (r gorwardRouter) HOST(host string) Router {
-	n := &gorwardRouter{
+// HOST set GowardRoute's Host
+func (r GowardRouter) HOST(host string) Router {
+	n := &GowardRouter{
 		R:          r.R,
 		Host:       host,
 		Path:       r.Path,
@@ -113,8 +123,9 @@ func (r gorwardRouter) HOST(host string) Router {
 	return n
 }
 
-func (r gorwardRouter) PATH(path string) Router {
-	n := &gorwardRouter{
+// PATH set GowardRoute's path
+func (r GowardRouter) PATH(path string) Router {
+	n := &GowardRouter{
 		R:          r.R,
 		Host:       r.Host,
 		Path:       path,
@@ -125,8 +136,9 @@ func (r gorwardRouter) PATH(path string) Router {
 	return n
 }
 
-func (r gorwardRouter) GROUP(path string, subRouter func(Router)) Router {
-	n := &gorwardRouter{
+// GROUP creates a Route group
+func (r GowardRouter) GROUP(path string, subRouter func(Router)) Router {
+	n := &GowardRouter{
 		R:          r.R.PathPrefix(path).Subrouter(),
 		Host:       r.Host,
 		Methods:    r.Methods,
@@ -138,42 +150,49 @@ func (r gorwardRouter) GROUP(path string, subRouter func(Router)) Router {
 	return r
 }
 
-func (r gorwardRouter) GET(path string, handler http.Handler) Router {
+// GET is a shorthand for creating Route with GET method
+func (r GowardRouter) GET(path string, handler http.Handler) Router {
 	r.METHODS("GET").PATH(path).HANDLER(handler)
 
 	return r
 }
 
-func (r gorwardRouter) POST(path string, handler http.Handler) Router {
+// POST is a shorthand for creating Route with POST method
+func (r GowardRouter) POST(path string, handler http.Handler) Router {
 	r.METHODS("POST").PATH(path).HANDLER(handler)
 
 	return r
 }
 
-func (r gorwardRouter) PUT(path string, handler http.Handler) Router {
+// PUT is a shorthand for creating Route with PUT method
+func (r GowardRouter) PUT(path string, handler http.Handler) Router {
 	r.METHODS("PUT").PATH(path).HANDLER(handler)
 
 	return r
 }
 
-func (r gorwardRouter) PATCH(path string, handler http.Handler) Router {
+// PATCH is a shorthand for creating Route with PATCH method
+func (r GowardRouter) PATCH(path string, handler http.Handler) Router {
 	r.METHODS("PATCH").PATH(path).HANDLER(handler)
 
 	return r
 }
 
-func (r gorwardRouter) DELETE(path string, handler http.Handler) Router {
+// DELETE is a shorthand for creating Route with DELETE method
+func (r GowardRouter) DELETE(path string, handler http.Handler) Router {
 	r.METHODS("DELETE").PATH(path).HANDLER(handler)
 
 	return r
 }
 
-func (r gorwardRouter) OPTIONS(path string, handler http.Handler) Router {
+// OPTIONS is a shorthand for creating Route with OPTIONS method
+func (r GowardRouter) OPTIONS(path string, handler http.Handler) Router {
 	r.METHODS("OPTIONS").PATH(path).HANDLER(handler)
 
 	return r
 }
 
-func (r gorwardRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+// ServeHTTP to pass checks for type http.Handler
+func (r GowardRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.R.ServeHTTP(w, req)
 }
