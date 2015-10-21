@@ -9,18 +9,19 @@ import (
 
 func main() {
 	router := mux.NewRouter(nil)
-	router.GET("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	router.Get("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "adljasldk")
 	}))
 
-	router.GET("/x", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	router.Get("/x", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "yyyy")
 	}))
 
-	router.MIDDLEWARES(HowLong, MiddlewareGenerator("one"), MiddlewareGenerator("two")).GROUP("/api", func(r mux.Router) {
-		r.GET("/user", HandlerGenerator("user:get"))
-		r.POST("/user", HandlerGenerator("user:post"))
-		r.GET("/user/{id}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	router.Middlewares(HowLong, MiddlewareGenerator("one"), MiddlewareGenerator("two")).Group("/api", func(r mux.Router) {
+		r.Get("/", HandlerGenerator("api:get"))
+		r.Get("/user", HandlerGenerator("user:get"))
+		r.Post("/user", HandlerGenerator("user:post"))
+		r.Get("/user/{id}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			id := mux.Vars(r)["id"]
 
 			fmt.Fprintf(w, "Hello, %s!", id)
